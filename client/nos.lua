@@ -56,11 +56,18 @@ CreateThread(function()
                         nitrousActivated = true
 
                         CreateThread(function()
+                            local syncTick = 0
                             while nitrousActivated do
+                                vehicleNitrous[Plate].level = vehicleNitrous[Plate].level - 1
                                 if vehicleNitrous[Plate].level - 1 ~= 0 then
-                                    TriggerServerEvent('nitrous:server:UpdateNitroLevel', Plate, (vehicleNitrous[Plate].level - 1))
+                                    syncTick = syncTick + 1
+                                    if syncTick >= 20 then
+                                        TriggerServerEvent('nitrous:server:UpdateNitroLevel', Plate, vehicleNitrous[Plate].level)
+                                        syncTick = 0
+                                    end
                                     TriggerEvent('hud:client:UpdateNitrous', vehicleNitrous[Plate].hasnitro,  vehicleNitrous[Plate].level, true)
                                 else
+                                    TriggerServerEvent('nitrous:server:UpdateNitroLevel', Plate, vehicleNitrous[Plate].level)
                                     TriggerServerEvent('nitrous:server:UnloadNitrous', Plate)
                                     nitrousActivated = false
                                     SetVehicleBoostActive(cache.vehicle, false)
@@ -89,6 +96,7 @@ CreateThread(function()
                                 Fxs[index] = nil
                             end
                             StopScreenEffect("RaceTurbo")
+                            TriggerServerEvent('nitrous:server:UpdateNitroLevel', Plate, vehicleNitrous[Plate].level)
                             TriggerEvent('hud:client:UpdateNitrous', vehicleNitrous[Plate].hasnitro,  vehicleNitrous[Plate].level, false)
                             nitrousActivated = false
                         end
